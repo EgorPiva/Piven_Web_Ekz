@@ -40,13 +40,20 @@ def markdown_filter(text):
 def index():
     page = request.args.get("page", 1, type=int)
     since = datetime.utcnow() - timedelta(days=90)
-    popular_books = (
-        db.session.query(Book, func.count(BookVisit.id).label("visits_count"))
-        .join(BookVisit)
-        .options(selectinload(Book.genres), selectinload(Book.cover))
+    visit_counts = (
+        db.session.query(
+            BookVisit.book_id.label("book_id"),
+            func.count(BookVisit.id).label("visits_count"),
+        )
         .filter(BookVisit.visited_at >= since)
-        .group_by(Book.id)
-        .order_by(func.count(BookVisit.id).desc(), Book.title.asc())
+        .group_by(BookVisit.book_id)
+        .subquery()
+    )
+    popular_books = (
+        db.session.query(Book, visit_counts.c.visits_count)
+        .join(visit_counts, visit_counts.c.book_id == Book.id)
+        .options(selectinload(Book.genres), selectinload(Book.cover))
+        .order_by(visit_counts.c.visits_count.desc(), Book.title.asc())
         .limit(5)
         .all()
     )
@@ -320,20 +327,23 @@ def build_visit_log_query():
 
 
 def build_book_stats_query(date_from=None, date_to=None):
-    query = (
+    visit_counts = (
         db.session.query(
-            Book.id,
-            Book.title,
+            BookVisit.book_id.label("book_id"),
             func.count(BookVisit.id).label("visits_count"),
         )
-        .join(BookVisit, BookVisit.book_id == Book.id)
         .filter(BookVisit.user_id.isnot(None))
     )
     if date_from:
-        query = query.filter(BookVisit.visited_at >= date_from)
+        visit_counts = visit_counts.filter(BookVisit.visited_at >= date_from)
     if date_to:
-        query = query.filter(BookVisit.visited_at < date_to)
-    return query.group_by(Book.id).order_by(func.count(BookVisit.id).desc(), Book.title.asc())
+        visit_counts = visit_counts.filter(BookVisit.visited_at < date_to)
+    visit_counts = visit_counts.group_by(BookVisit.book_id).subquery()
+    return (
+        db.session.query(Book.title, visit_counts.c.visits_count)
+        .join(visit_counts, visit_counts.c.book_id == Book.id)
+        .order_by(visit_counts.c.visits_count.desc(), Book.title.asc())
+    )
 
 
 def get_date_range():
