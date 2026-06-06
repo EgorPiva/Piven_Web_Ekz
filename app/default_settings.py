@@ -2,7 +2,7 @@ import os
 
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
-SECRET_KEY = "replace-this-key-in-instance-config"
+SECRET_KEY = os.getenv("SECRET_KEY", "replace-this-key-in-instance-config")
 SQLALCHEMY_DATABASE_URI = os.getenv(
     "DATABASE_URL",
     "sqlite:///" + os.path.join(BASE_DIR, "instance", "exam.sqlite"),

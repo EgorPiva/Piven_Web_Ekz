@@ -1,0 +1,96 @@
+SET NAMES utf8mb4;
+
+SET FOREIGN_KEY_CHECKS=0;
+
+
+CREATE TABLE roles (
+	id INTEGER NOT NULL AUTO_INCREMENT, 
+	name VARCHAR(32) NOT NULL, 
+	description VARCHAR(120) NOT NULL, 
+	PRIMARY KEY (id), 
+	UNIQUE (name)
+);
+
+
+CREATE TABLE genres (
+	id INTEGER NOT NULL AUTO_INCREMENT, 
+	name VARCHAR(80) NOT NULL, 
+	PRIMARY KEY (id), 
+	UNIQUE (name)
+);
+
+
+CREATE TABLE covers (
+	id INTEGER NOT NULL AUTO_INCREMENT, 
+	filename VARCHAR(255) NOT NULL, 
+	mime_type VARCHAR(80) NOT NULL, 
+	md5_hash VARCHAR(32) NOT NULL, 
+	PRIMARY KEY (id), 
+	UNIQUE (md5_hash)
+);
+
+
+CREATE TABLE users (
+	id INTEGER NOT NULL AUTO_INCREMENT, 
+	login VARCHAR(64) NOT NULL, 
+	password_hash VARCHAR(255) NOT NULL, 
+	last_name VARCHAR(64) NOT NULL, 
+	first_name VARCHAR(64) NOT NULL, 
+	middle_name VARCHAR(64), 
+	role_id INTEGER NOT NULL, 
+	PRIMARY KEY (id), 
+	UNIQUE (login), 
+	FOREIGN KEY(role_id) REFERENCES roles (id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE books (
+	id INTEGER NOT NULL AUTO_INCREMENT, 
+	title VARCHAR(180) NOT NULL, 
+	description TEXT NOT NULL, 
+	year INTEGER NOT NULL, 
+	publisher VARCHAR(120) NOT NULL, 
+	author VARCHAR(120) NOT NULL, 
+	pages INTEGER NOT NULL, 
+	cover_id INTEGER NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(cover_id) REFERENCES covers (id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE book_genres (
+	book_id INTEGER NOT NULL, 
+	genre_id INTEGER NOT NULL, 
+	PRIMARY KEY (book_id, genre_id), 
+	FOREIGN KEY(book_id) REFERENCES books (id) ON DELETE CASCADE, 
+	FOREIGN KEY(genre_id) REFERENCES genres (id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE reviews (
+	id INTEGER NOT NULL AUTO_INCREMENT, 
+	book_id INTEGER NOT NULL, 
+	user_id INTEGER NOT NULL, 
+	rating INTEGER NOT NULL, 
+	text TEXT NOT NULL, 
+	created_at DATETIME NOT NULL, 
+	PRIMARY KEY (id), 
+	CONSTRAINT reviews_rating_range CHECK (rating BETWEEN 0 AND 5), 
+	CONSTRAINT reviews_book_user_unique UNIQUE (book_id, user_id), 
+	FOREIGN KEY(book_id) REFERENCES books (id) ON DELETE CASCADE, 
+	FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE book_visits (
+	id INTEGER NOT NULL AUTO_INCREMENT, 
+	book_id INTEGER NOT NULL, 
+	user_id INTEGER, 
+	anonymous_key VARCHAR(36), 
+	visited_at DATETIME NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(book_id) REFERENCES books (id) ON DELETE CASCADE, 
+	FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+SET FOREIGN_KEY_CHECKS=1;
