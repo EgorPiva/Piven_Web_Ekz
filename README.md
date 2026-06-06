@@ -41,4 +41,3 @@ password: moderator
 login: user
 password: user
 ```
-
