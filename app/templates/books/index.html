@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-4">Книги</h1>
+
+{% if popular_books %}
+    <section class="mb-5">
+        <h2 class="h4 mb-3">Популярные книги</h2>
+        <div class="row g-3">
+            {% for book, visits_count in popular_books %}
+                <div class="col-md-6 col-lg-4">
+                    <article class="border rounded bg-white p-3 h-100">
+                        <h3 class="h6 mb-1">
+                            <a href="{{ url_for('books.show', book_id=book.id) }}">{{ book.title }}</a>
+                        </h3>
+                        <div class="text-muted small">{{ book.author }}, {{ book.year }}</div>
+                        <div class="mt-2">Просмотров за 3 месяца: {{ visits_count }}</div>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}
+
+{% if recent_books %}
+    <section class="mb-5">
+        <h2 class="h4 mb-3">Недавно просмотренные книги</h2>
+        <div class="list-group">
+            {% for book in recent_books %}
+                <a class="list-group-item list-group-item-action d-flex justify-content-between gap-3" href="{{ url_for('books.show', book_id=book.id) }}">
+                    <span>{{ book.title }}</span>
+                    <span class="text-muted">{{ book.author }}</span>
+                </a>
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}
+
+{% if books.items %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white">
+            <thead>
+            <tr>
+                <th>Название</th>
+                <th>Жанры</th>
+                <th>Год</th>
+                <th>Оценка</th>
+                <th>Рецензии</th>
+                <th class="text-end">Действия</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for book in books.items %}
+                <tr>
+                    <td>{{ book.title }}</td>
+                    <td>
+                        {% for genre in book.genres %}
+                            <span class="badge text-bg-secondary">{{ genre.name }}</span>
+                        {% else %}
+                            <span class="text-muted">не указаны</span>
+                        {% endfor %}
+                    </td>
+                    <td>{{ book.year }}</td>
+                    <td>{{ book.average_rating if book.average_rating is not none else "нет оценок" }}</td>
+                    <td>{{ book.reviews|length }}</td>
+                    <td class="text-end">
+                        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('books.show', book_id=book.id) }}">Просмотр</a>
+                        {% if current_user.is_authenticated and current_user.has_role('admin', 'moderator') %}
+                            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('books.edit', book_id=book.id) }}">Редактировать</a>
+                        {% endif %}
+                        {% if current_user.is_authenticated and current_user.has_role('admin') %}
+                            <button class="btn btn-outline-danger btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#deleteBook{{ book.id }}">
+                                Удалить
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if current_user.is_authenticated and current_user.has_role('admin') %}
+        {% for book in books.items %}
+            <div class="modal fade" id="deleteBook{{ book.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 class="modal-title h5">Удаление книги</h2>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            Вы уверены, что хотите удалить книгу {{ book.title }}?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Нет</button>
+                            <form method="post" action="{{ url_for('books.delete', book_id=book.id) }}">
+                                <button class="btn btn-danger" type="submit">Да</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if books.pages > 1 %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% for page in books.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page %}
+                        <li class="page-item {{ 'active' if page == books.page }}">
+                            <a class="page-link" href="{{ url_for('books.index', page=page) }}">{{ page }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </nav>
+    {% endif %}
+{% else %}
+    <div class="alert alert-info">Книги пока не добавлены.</div>
+{% endif %}
+
+{% if current_user.is_authenticated and current_user.has_role('admin') %}
+    <a class="btn btn-primary mt-3" href="{{ url_for('books.create') }}">Добавить книгу</a>
+{% endif %}
+{% endblock %}

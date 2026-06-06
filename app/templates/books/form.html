@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% macro book_form(book, genres, action, form) %}
+    {% set posted_genres = form.getlist('genres') if form else [] %}
+    <form method="post" enctype="multipart/form-data">
+        <div class="row g-3">
+            <div class="col-md-8">
+                <label class="form-label" for="title">Название</label>
+                <input class="form-control" id="title" name="title" value="{{ form.get('title', book.title if book else '') }}" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="year">Год</label>
+                <input class="form-control" id="year" name="year" type="number" min="1450" max="2100" value="{{ form.get('year', book.year if book else '') }}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="author">Автор</label>
+                <input class="form-control" id="author" name="author" value="{{ form.get('author', book.author if book else '') }}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="publisher">Издательство</label>
+                <input class="form-control" id="publisher" name="publisher" value="{{ form.get('publisher', book.publisher if book else '') }}" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="pages">Объем, стр.</label>
+                <input class="form-control" id="pages" name="pages" type="number" min="1" value="{{ form.get('pages', book.pages if book else '') }}" required>
+            </div>
+            <div class="col-md-8">
+                <label class="form-label" for="genres">Жанры</label>
+                <select class="form-select" id="genres" name="genres" multiple required>
+                    {% for genre in genres %}
+                        {% set is_selected = genre.id|string in posted_genres or (not posted_genres and book and genre in book.genres) %}
+                        <option value="{{ genre.id }}" {{ 'selected' if is_selected }}>{{ genre.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if not book %}
+                <div class="col-12">
+                    <label class="form-label" for="cover">Обложка</label>
+                    <input class="form-control" id="cover" name="cover" type="file" accept="image/*" required>
+                </div>
+            {% endif %}
+            <div class="col-12">
+                <label class="form-label" for="description">Описание</label>
+                <textarea class="form-control js-markdown-editor" id="description" name="description" rows="9" required>{{ form.get('description', book.description if book else '') }}</textarea>
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary" type="submit">{{ action }}</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('books.index') }}">Отмена</a>
+        </div>
+    </form>
+{% endmacro %}
+
+{% block title %}{{ action }} книгу{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-4">{{ action }} книгу</h1>
+{{ book_form(book, genres, action, form) }}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+{% endblock %}

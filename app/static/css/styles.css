@@ -1,0 +1,20 @@
+body {
+    background-color: #f6f8fb;
+    min-height: 100vh;
+}
+
+.book-detail-cover {
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    width: 100%;
+}
+
+.book-description img,
+.book-description table {
+    max-width: 100%;
+}
+
+.rating {
+    color: #a36600;
+    font-weight: 700;
+}
