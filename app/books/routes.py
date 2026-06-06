@@ -398,9 +398,9 @@ def fill_book_from_form(book, require_cover):
     book.publisher = publisher
     book.author = author
     book.pages = pages
-    book.genres = selected_genres
-
     if cover_file and cover_file.filename:
         book.cover = save_cover(cover_file)
+
+    book.genres = selected_genres
 
     return True

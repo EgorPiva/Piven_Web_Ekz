@@ -69,7 +69,8 @@ def save_cover(file_storage):
     content = file_storage.read()
     file_storage.seek(0)
     digest = hashlib.md5(content).hexdigest()
-    existing_cover = Cover.query.filter_by(md5_hash=digest).first()
+    with db.session.no_autoflush:
+        existing_cover = Cover.query.filter_by(md5_hash=digest).first()
 
     if existing_cover is not None:
         return existing_cover
