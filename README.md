@@ -31,3 +31,14 @@ flask --app app.py run
 login: admin
 password: admin
 ```
+
+Также создаются тестовые пользователи:
+
+```text
+login: moderator
+password: moderator
+
+login: user
+password: user
+```
+

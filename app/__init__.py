@@ -76,5 +76,41 @@ def register_cli(app):
                 )
             )
 
+        moderator_role = Role.query.filter_by(name="moderator").first()
+        user_role = Role.query.filter_by(name="user").first()
+        demo_users = (
+            {
+                "login": "moderator",
+                "password": "moderator",
+                "last_name": "Модератор",
+                "first_name": "Тест",
+                "middle_name": "",
+                "role": moderator_role,
+            },
+            {
+                "login": "user",
+                "password": "user",
+                "last_name": "Пользователь",
+                "first_name": "Тест",
+                "middle_name": "",
+                "role": user_role,
+            },
+        )
+        for payload in demo_users:
+            if User.query.filter_by(login=payload["login"]).first() is None:
+                db.session.add(
+                    User(
+                        login=payload["login"],
+                        password_hash=generate_password_hash(payload["password"]),
+                        last_name=payload["last_name"],
+                        first_name=payload["first_name"],
+                        middle_name=payload["middle_name"],
+                        role=payload["role"],
+                    )
+                )
+
         db.session.commit()
-        print("Exam data initialized. Admin login/password: admin/admin")
+        print("Exam data initialized.")
+        print("Admin login/password: admin/admin")
+        print("Moderator login/password: moderator/moderator")
+        print("User login/password: user/user")
