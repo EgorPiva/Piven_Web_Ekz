@@ -18,3 +18,23 @@ body {
     color: #a36600;
     font-weight: 700;
 }
+
+.genre-picker {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.genre-option {
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.genre-option:hover,
+.genre-option:focus-within {
+    background: #eef4ff;
+    border-color: #6ea8fe;
+}
+
+.genre-option.is-selected {
+    background: #dbeafe;
+    border-color: #6ea8fe;
+}

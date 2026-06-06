@@ -26,12 +26,26 @@
             </div>
             <div class="col-md-8">
                 <label class="form-label" for="genres">Жанры</label>
-                <select class="form-select" id="genres" name="genres" multiple required>
-                    {% for genre in genres %}
-                        {% set is_selected = genre.id|string in posted_genres or (not posted_genres and book and genre in book.genres) %}
-                        <option value="{{ genre.id }}" {{ 'selected' if is_selected }}>{{ genre.name }}</option>
-                    {% endfor %}
-                </select>
+                <div class="genre-picker border rounded-3 p-3">
+                    <div class="row row-cols-1 row-cols-md-2 g-2">
+                        {% for genre in genres %}
+                            {% set is_selected = genre.id|string in posted_genres or (not posted_genres and book and genre in book.genres) %}
+                            <div class="col">
+                                <label class="genre-option form-check border rounded-3 p-2 d-flex align-items-center gap-2 h-100">
+                                    <input
+                                        class="form-check-input m-0"
+                                        type="checkbox"
+                                        name="genres"
+                                        value="{{ genre.id }}"
+                                        {{ 'checked' if is_selected }}
+                                    >
+                                    <span>{{ genre.name }}</span>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-text mt-2">Выберите хотя бы один жанр.</div>
+                </div>
             </div>
             {% if not book %}
                 <div class="col-12">
